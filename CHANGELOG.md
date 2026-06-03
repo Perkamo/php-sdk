@@ -1,5 +1,11 @@
 # `perkamo/sdk` Changelog
 
+## 0.3.1 - 2026-06-03
+
+### Changed
+
+- Refreshed the mirrored Packagist release after the synchronized SDK documentation patch.
+
 ## 0.3.0 - 2026-06-03
 
 ### Changed
