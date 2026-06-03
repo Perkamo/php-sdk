@@ -20,7 +20,6 @@ use Perkamo\Client;
 
 $perkamo = new Client(
     baseUrl: 'https://api.perkamo.com',
-    space: 'commerce-test',
     apiKey: getenv('PERKAMO_SECRET_KEY'),
 );
 

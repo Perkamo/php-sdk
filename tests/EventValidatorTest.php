@@ -16,7 +16,6 @@ final class EventValidatorTest extends TestCase
         $this->expectExceptionMessage('reserved Perkamo context field');
 
         EventValidator::assertSafeEvent([
-            'space' => 'demo',
             'user_id' => 'customer_123',
             'event' => 'purchase.completed',
             'transaction_id' => 'order_1',
@@ -27,7 +26,6 @@ final class EventValidatorTest extends TestCase
     public function testAcceptsBusinessFacts(): void
     {
         EventValidator::assertSafeEvent([
-            'space' => 'demo',
             'user_id' => 'customer_123',
             'event' => 'purchase.completed',
             'transaction_id' => 'order_1',

@@ -1,5 +1,11 @@
 # `perkamo/sdk` Changelog
 
+## 0.3.0 - 2026-06-03
+
+### Changed
+
+- Removed redundant Space arguments and payload fields from the server client; the server API key now identifies the Space for event, batch and profile calls.
+
 ## 0.2.0 - 2026-06-03
 
 ### Changed

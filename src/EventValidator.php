@@ -24,7 +24,6 @@ final class EventValidator
      */
     public static function assertSafeEvent(array $event): void
     {
-        self::assertStringField($event, 'space', 128);
         self::assertStringField($event, 'user_id', 256);
         self::assertStringField($event, 'event', 128);
         self::assertStringField($event, 'transaction_id', 256);
