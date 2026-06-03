@@ -5,6 +5,8 @@ Server-side PHP client for the Perkamo API.
 Use this package only from trusted backend code. Never expose Perkamo server API
 keys to browser, mobile, or embedded widget code.
 
+Full SDK documentation: https://www.perkamo.com/docs/v1/sdk
+
 ```bash
 composer require perkamo/sdk
 ```
@@ -18,7 +20,7 @@ use Perkamo\Client;
 
 $perkamo = new Client(
     baseUrl: 'https://api.perkamo.com',
-    tenant: 'commerce-test',
+    space: 'commerce-test',
     apiKey: getenv('PERKAMO_SECRET_KEY'),
 );
 

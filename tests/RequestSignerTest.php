@@ -16,12 +16,12 @@ final class RequestSignerTest extends TestCase
             timestamp: '1700000000',
             method: 'POST',
             path: '/v1/events',
-            body: '{"tenant":"demo"}',
+            body: '{"space":"demo"}',
         );
 
         self::assertMatchesRegularExpression('/^v1=[a-f0-9]{64}$/', $signature);
         self::assertSame(
-            'v1=fe762eb8c15ef0eb3731e3a2d53a918a4dd918abdbd42bf04a5522646d79dcae',
+            'v1=6bbc1e5ba44b90642cb2f878838723f95d0272760c9bae93162479595e765621',
             $signature,
         );
     }

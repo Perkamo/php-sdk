@@ -11,15 +11,15 @@ final class Client
 {
     public function __construct(
         private readonly string $baseUrl,
-        private readonly string $tenant,
+        private readonly string $space,
         private readonly string $apiKey,
         private readonly int $timeoutSeconds = 10,
     ) {
         if ($this->baseUrl === '') {
             throw new RuntimeException('Perkamo baseUrl is required');
         }
-        if ($this->tenant === '') {
-            throw new RuntimeException('Perkamo tenant is required');
+        if ($this->space === '') {
+            throw new RuntimeException('Perkamo space is required');
         }
         if ($this->apiKey === '') {
             throw new RuntimeException('Perkamo apiKey is required');
@@ -38,7 +38,7 @@ final class Client
         ?string $occurredAt = null,
     ): array {
         $payload = [
-            'tenant' => $this->tenant,
+            'space' => $this->space,
             'user_id' => $userId,
             'event' => $event,
             'transaction_id' => $transactionId ?? $this->createTransactionId(),
@@ -58,7 +58,7 @@ final class Client
     {
         $payloadEvents = array_map(function (array $event): array {
             $payload = [
-                'tenant' => $event['tenant'] ?? $this->tenant,
+                'space' => $event['space'] ?? $this->space,
                 'user_id' => $event['user_id'] ?? null,
                 'event' => $event['event'] ?? null,
                 'transaction_id' => $event['transaction_id'] ?? null,
