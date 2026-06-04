@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Perkamo;
 
+use DateTimeInterface;
+use InvalidArgumentException;
 use Perkamo\Exception\PerkamoApiException;
 use RuntimeException;
 
@@ -23,47 +25,41 @@ final class Client
     }
 
     /**
-     * @param array<string, mixed> $context
-     * @return array<string, mixed>
+     * @param EventContext|array<string, mixed> $context
      */
     public function emit(
         string $userId,
         string $event,
-        array $context = [],
+        EventContext|array $context = [],
         ?string $transactionId = null,
-        ?string $occurredAt = null,
-    ): array {
-        $payload = [
-            'user_id' => $userId,
-            'event' => $event,
-            'transaction_id' => $transactionId ?? $this->createTransactionId(),
-            'context' => $context,
-            'occurred_at' => $occurredAt ?? gmdate('c'),
-        ];
-        EventValidator::assertSafeEvent($payload);
+        DateTimeInterface|string|null $occurredAt = null,
+    ): EventIngestResult {
+        return $this->emitEvent(new EventInput($userId, $event, $context, $transactionId, $occurredAt));
+    }
 
-        return $this->request('POST', '/v1/events', $payload, true);
+    public function emitEvent(EventInput $event): EventIngestResult
+    {
+        $payload = $event->toPayload($this->createTransactionId(), gmdate('c'));
+
+        return EventIngestResult::fromArray($this->request('POST', '/v1/events', $payload, true));
     }
 
     /**
-     * @param list<array<string, mixed>> $events
-     * @return array<string, mixed>
+     * @param list<EventInput> $events
      */
-    public function batch(array $events): array
+    public function batch(array $events): BatchIngestResult
     {
-        $payloadEvents = array_map(function (array $event): array {
-            $payload = [
-                'user_id' => $event['user_id'] ?? null,
-                'event' => $event['event'] ?? null,
-                'transaction_id' => $event['transaction_id'] ?? null,
-                'context' => $event['context'] ?? null,
-                'occurred_at' => $event['occurred_at'] ?? null,
-            ];
-            EventValidator::assertSafeEvent($payload);
-            return $payload;
+        $payloadEvents = array_map(function (mixed $event): array {
+            if (!$event instanceof EventInput) {
+                throw new InvalidArgumentException('Perkamo batch events must be EventInput instances');
+            }
+
+            return $event->toPayload(null, gmdate('c'));
         }, $events);
 
-        return $this->request('POST', '/v1/events:batch', ['events' => $payloadEvents], true);
+        return BatchIngestResult::fromArray(
+            $this->request('POST', '/v1/events:batch', ['events' => $payloadEvents], true),
+        );
     }
 
     /**
@@ -74,9 +70,64 @@ final class Client
         return $this->request('GET', '/v1/profile/' . rawurlencode($userId), null, false);
     }
 
+    public function createBrowserToken(
+        string $browserKey,
+        string $userId,
+        ?int $ttlSeconds = null,
+    ): BrowserToken {
+        $payload = [
+            'browser_key' => $this->nonEmptyString($browserKey, 'browserKey'),
+            'user_id' => $this->nonEmptyString($userId, 'userId'),
+        ];
+
+        if ($ttlSeconds !== null) {
+            if ($ttlSeconds < 1 || $ttlSeconds > 1800) {
+                throw new InvalidArgumentException('Perkamo browser token TTL must be between 1 and 1800 seconds');
+            }
+            $payload['ttl_seconds'] = $ttlSeconds;
+        }
+
+        return BrowserToken::fromArray(
+            $this->request('POST', '/v1/browser-tokens', $payload, true),
+        );
+    }
+
+    public function createBrowserStreamToken(
+        string $browserKey,
+        string $userId,
+        ?int $ttlSeconds = 120,
+    ): BrowserToken {
+        $payload = [
+            'browser_key' => $this->nonEmptyString($browserKey, 'browserKey'),
+            'user_id' => $this->nonEmptyString($userId, 'userId'),
+            'purpose' => 'stream',
+        ];
+
+        if ($ttlSeconds !== null) {
+            if ($ttlSeconds < 1 || $ttlSeconds > 1800) {
+                throw new InvalidArgumentException('Perkamo browser token TTL must be between 1 and 1800 seconds');
+            }
+            $payload['ttl_seconds'] = $ttlSeconds;
+        }
+
+        return BrowserToken::fromArray(
+            $this->request('POST', '/v1/browser-tokens', $payload, true),
+        );
+    }
+
     private function createTransactionId(): string
     {
         return 'tx_' . bin2hex(random_bytes(16));
+    }
+
+    private function nonEmptyString(string $value, string $label): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            throw new InvalidArgumentException('Perkamo ' . $label . ' must not be empty');
+        }
+
+        return $value;
     }
 
     /**

@@ -1,5 +1,16 @@
 # `perkamo/sdk` Changelog
 
+## Unreleased
+
+## 0.4.0 - 2026-06-04
+
+### Changed
+
+- Add typed event request and response objects for event ingestion.
+- Add typed `createBrowserToken()` and `createBrowserStreamToken()` helpers for
+  Perkamo-issued browser JWTs.
+- Switch the package license to MIT.
+
 ## 0.3.1 - 2026-06-03
 
 ### Changed

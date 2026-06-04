@@ -8,17 +8,6 @@ use InvalidArgumentException;
 
 final class EventValidator
 {
-    /** @var array<string, true> */
-    private const RESERVED_CONTEXT_KEYS = [
-        'xp' => true,
-        'wallet' => true,
-        'wallets' => true,
-        'rewards' => true,
-        'level' => true,
-        'perks' => true,
-        'achievements' => true,
-    ];
-
     /**
      * @param array<string, mixed> $event
      */
@@ -29,17 +18,14 @@ final class EventValidator
         self::assertStringField($event, 'transaction_id', 256);
 
         $context = $event['context'] ?? [];
-        if ($context !== null && !is_array($context)) {
-            throw new InvalidArgumentException("Perkamo event field 'context' must be an array");
+        if ($context instanceof EventContext) {
+            return;
+        }
+        if (!is_array($context)) {
+            throw new InvalidArgumentException("Perkamo event field 'context' must be an array or EventContext");
         }
 
-        foreach (array_keys($context ?? []) as $key) {
-            if (isset(self::RESERVED_CONTEXT_KEYS[strtolower((string) $key)])) {
-                throw new InvalidArgumentException(
-                    "Refusing to send reserved Perkamo context field '{$key}' from the SDK"
-                );
-            }
-        }
+        EventContext::fromArray($context);
     }
 
     /**

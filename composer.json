@@ -2,7 +2,7 @@
   "name": "perkamo/sdk",
   "description": "Server-side PHP client for the Perkamo API.",
   "type": "library",
-  "license": "proprietary",
+  "license": "MIT",
   "autoload": {
     "psr-4": {
       "Perkamo\\": "src/"
