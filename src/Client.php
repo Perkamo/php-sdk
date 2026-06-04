@@ -87,6 +87,24 @@ final class Client
         return $this->request('GET', '/v1/profile/' . rawurlencode($userId), null, false);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    public function program(): array
+    {
+        return $this->request('GET', '/v1/program', null, false);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function eventCatalog(): array
+    {
+        $earningRules = $this->program()['blueprint']['earningRules'] ?? [];
+
+        return is_array($earningRules) ? array_values($earningRules) : [];
+    }
+
     public function createBrowserToken(
         string $browserKey,
         string $userId,
@@ -194,13 +212,24 @@ final class Client
             throw new RuntimeException('Perkamo API request failed before receiving a response');
         }
 
-        $statusCode = $this->statusCode($http_response_header ?? []);
+        $responseHeaders = $http_response_header ?? [];
+        $statusCode = $this->statusCode($responseHeaders);
         $decoded = $responseBody === ''
             ? []
             : json_decode($responseBody, true, 512, JSON_THROW_ON_ERROR);
 
         if ($statusCode < 200 || $statusCode >= 300) {
-            throw new PerkamoApiException($statusCode, $decoded);
+            throw new PerkamoApiException(
+                $statusCode,
+                $decoded,
+                $this->headerValue($responseHeaders, 'x-perkamo-request-id', 'x-request-id'),
+                $this->headerValue($responseHeaders, 'retry-after'),
+                [
+                    'limit' => $this->headerNumber($responseHeaders, 'ratelimit-limit', 'x-ratelimit-limit'),
+                    'remaining' => $this->headerNumber($responseHeaders, 'ratelimit-remaining', 'x-ratelimit-remaining'),
+                    'reset' => $this->headerValue($responseHeaders, 'ratelimit-reset', 'x-ratelimit-reset'),
+                ],
+            );
         }
 
         return is_array($decoded) ? $decoded : [];
@@ -217,5 +246,44 @@ final class Client
         }
 
         return (int) $matches[1];
+    }
+
+    /**
+     * @param list<string> $headers
+     */
+    private function headerValue(array $headers, string ...$names): ?string
+    {
+        $lookup = array_fill_keys(array_map('strtolower', $names), true);
+
+        foreach ($headers as $header) {
+            $separator = strpos($header, ':');
+            if ($separator === false) {
+                continue;
+            }
+
+            $name = strtolower(trim(substr($header, 0, $separator)));
+            if (!isset($lookup[$name])) {
+                continue;
+            }
+
+            $value = trim(substr($header, $separator + 1));
+
+            return $value === '' ? null : $value;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<string> $headers
+     */
+    private function headerNumber(array $headers, string ...$names): ?int
+    {
+        $value = $this->headerValue($headers, ...$names);
+        if ($value === null || !ctype_digit($value)) {
+            return null;
+        }
+
+        return (int) $value;
     }
 }

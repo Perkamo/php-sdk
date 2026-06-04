@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 0.5.0 - 2026-06-04
+
+### Changed
+
+- Add `program()` and `eventCatalog()` helpers for trusted backend/admin
+  integrations.
+- Enrich `PerkamoApiException` with request id, retry-after and rate-limit
+  metadata when returned by the API or gateway.
+
 ## 0.4.1 - 2026-06-04
 
 ### Changed

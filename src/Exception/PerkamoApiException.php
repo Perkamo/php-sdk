@@ -11,6 +11,9 @@ final class PerkamoApiException extends RuntimeException
     public function __construct(
         private readonly int $statusCode,
         private readonly mixed $body,
+        private readonly ?string $requestId = null,
+        private readonly ?string $retryAfter = null,
+        private readonly array $rateLimit = [],
     ) {
         $message = is_array($body) && isset($body['message'])
             ? (string) $body['message']
@@ -27,5 +30,23 @@ final class PerkamoApiException extends RuntimeException
     public function body(): mixed
     {
         return $this->body;
+    }
+
+    public function requestId(): ?string
+    {
+        return $this->requestId;
+    }
+
+    public function retryAfter(): ?string
+    {
+        return $this->retryAfter;
+    }
+
+    /**
+     * @return array{limit?: int|null, remaining?: int|null, reset?: string|null}
+     */
+    public function rateLimit(): array
+    {
+        return $this->rateLimit;
     }
 }

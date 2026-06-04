@@ -66,6 +66,44 @@ sent.
 `emitEvent()` and `emit()` return `Perkamo\EventIngestResult`. Use `toArray()`
 when you need the raw API payload.
 
+## Program Catalog
+
+Trusted backend and admin integrations can read the active Space program and
+event catalog:
+
+```php
+$program = $perkamo->program();
+$events = $perkamo->eventCatalog();
+
+foreach ($events as $event) {
+    echo $event['event'] . PHP_EOL;
+}
+```
+
+Use this to populate customer-admin tooling with configured event keys and
+labels. Do not use it as a wallet editing API.
+
+## API Errors
+
+Non-2xx responses throw `Perkamo\Exception\PerkamoApiException`. The exception
+includes the HTTP status, parsed body and operational metadata when Perkamo or
+an API gateway returns it:
+
+```php
+use Perkamo\Exception\PerkamoApiException;
+
+try {
+    $perkamo->emit('customer_123', 'purchase.completed', transactionId: 'order_1092');
+} catch (PerkamoApiException $error) {
+    error_log(json_encode([
+        'status' => $error->statusCode(),
+        'request_id' => $error->requestId(),
+        'retry_after' => $error->retryAfter(),
+        'rate_limit' => $error->rateLimit(),
+    ]));
+}
+```
+
 ## Browser Tokens
 
 For browser SDK integrations, authenticate the user in your backend first and

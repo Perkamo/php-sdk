@@ -34,6 +34,12 @@ final class ClientTest extends TestCase
         self::assertSame('sk_test_secret', $this->property($client, 'apiKey'));
     }
 
+    public function testExposesProgramCatalogHelpers(): void
+    {
+        self::assertTrue(method_exists(Client::class, 'program'));
+        self::assertTrue(method_exists(Client::class, 'eventCatalog'));
+    }
+
     public function testRequiresApiKey(): void
     {
         $this->expectException(RuntimeException::class);
