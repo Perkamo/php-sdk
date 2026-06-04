@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.4.1 - 2026-06-04
+
+### Changed
+
+- Default `Client` to the hosted Perkamo API so standard integrations can pass
+  only the server API key.
+
 ## 0.4.0 - 2026-06-04
 
 ### Changed

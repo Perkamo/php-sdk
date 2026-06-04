@@ -20,7 +20,6 @@ use Perkamo\Client;
 use Perkamo\EventInput;
 
 $perkamo = new Client(
-    baseUrl: 'https://api.perkamo.com',
     apiKey: getenv('PERKAMO_SECRET_KEY'),
 );
 
@@ -57,6 +56,9 @@ The client signs mutating requests with:
 - `x-perkamo-timestamp`
 - `x-perkamo-signature`
 
+The client defaults to the hosted Perkamo API. Pass `baseUrl` only for a custom,
+staging or private endpoint.
+
 Reserved server-computed context keys such as `xp`, `wallet`, `wallets`,
 `level`, `perks`, `rewards` and `achievements` are rejected before a request is
 sent.
@@ -84,12 +86,13 @@ return [
 ];
 ```
 
-The PHP SDK uses the configured server API key for this request. Browser token
-scopes and allowed client events are controlled by the browser key policy in
-Perkamo, not by this runtime request. Use `*` on the browser key to allow all
-current and future configured events. New browser keys default to the full
-browser SDK policy: profile reads, allowed browser events and profile streams.
-Do not expose the server API key to browser, mobile or widget code.
+The PHP SDK uses the configured server API key for this request. Browser key
+access policy is configured in Perkamo and enforced server-side; the runtime
+token request does not send scopes or event allowlists. Use `*` on the browser
+key to allow all current and future configured events. New browser keys default
+to the full browser SDK policy: profile reads, allowed browser events and
+profile streams. Do not expose the server API key to browser, mobile or widget
+code.
 
 ## License
 

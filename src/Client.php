@@ -11,17 +11,34 @@ use RuntimeException;
 
 final class Client
 {
+    public const DEFAULT_BASE_URL = 'https://api.perkamo.com';
+
+    private readonly string $baseUrl;
+    private readonly string $apiKey;
+
     public function __construct(
-        private readonly string $baseUrl,
-        private readonly string $apiKey,
+        string $baseUrl = self::DEFAULT_BASE_URL,
+        ?string $apiKey = null,
         private readonly int $timeoutSeconds = 10,
     ) {
-        if ($this->baseUrl === '') {
-            throw new RuntimeException('Perkamo baseUrl is required');
+        if ($apiKey === null) {
+            if (func_num_args() === 0) {
+                $apiKey = '';
+            } else {
+                $apiKey = $baseUrl;
+                $baseUrl = self::DEFAULT_BASE_URL;
+            }
         }
-        if ($this->apiKey === '') {
+
+        $baseUrl = trim($baseUrl) === '' ? self::DEFAULT_BASE_URL : trim($baseUrl);
+        $apiKey = trim($apiKey);
+
+        if ($apiKey === '') {
             throw new RuntimeException('Perkamo apiKey is required');
         }
+
+        $this->baseUrl = $baseUrl;
+        $this->apiKey = $apiKey;
     }
 
     /**
