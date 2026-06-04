@@ -66,6 +66,21 @@ sent.
 `emitEvent()` and `emit()` return `Perkamo\EventIngestResult`. Use `toArray()`
 when you need the raw API payload.
 
+## Identify Profiles
+
+Create or update trusted profile traits before or during your event integration:
+
+```php
+$perkamo->identify('customer_123', [
+    'email' => 'customer@example.test',
+    'name' => 'Customer Test',
+    'crm_id' => 'crm_123',
+]);
+```
+
+Use your application's stable user id as the Perkamo profile id. Put only
+non-secret customer facts your application is allowed to share in traits.
+
 ## Program Catalog
 
 Trusted backend and admin integrations can read the active Space program and

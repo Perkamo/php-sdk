@@ -1,6 +1,11 @@
 # `perkamo/sdk` Changelog
 
-## Unreleased
+## 0.6.0 - 2026-06-04
+
+### Changed
+
+- Add `identify($userId, $traits)` for creating or updating trusted profile
+  traits through `POST /v1/identify`.
 
 ## 0.5.0 - 2026-06-04
 

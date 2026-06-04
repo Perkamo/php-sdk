@@ -40,6 +40,11 @@ final class ClientTest extends TestCase
         self::assertTrue(method_exists(Client::class, 'eventCatalog'));
     }
 
+    public function testExposesProfileIdentifyHelper(): void
+    {
+        self::assertTrue(method_exists(Client::class, 'identify'));
+    }
+
     public function testRequiresApiKey(): void
     {
         $this->expectException(RuntimeException::class);

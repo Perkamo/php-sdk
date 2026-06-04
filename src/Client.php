@@ -80,6 +80,23 @@ final class Client
     }
 
     /**
+     * @param array<string, mixed> $traits
+     * @return array<string, mixed>
+     */
+    public function identify(string $userId, array $traits = []): array
+    {
+        return $this->request(
+            'POST',
+            '/v1/identify',
+            [
+                'user_id' => $this->nonEmptyString($userId, 'userId'),
+                'traits' => $traits,
+            ],
+            true,
+        );
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function profile(string $userId): array
