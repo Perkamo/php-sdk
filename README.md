@@ -66,9 +66,9 @@ sent.
 `emitEvent()` and `emit()` return `Perkamo\EventIngestResult`. Use `toArray()`
 when you need the raw API payload.
 
-## Identify Profiles
+## Identify Customers
 
-Create or update trusted profile traits before or during your event integration:
+Create or update trusted customer traits before or during your event integration:
 
 ```php
 $perkamo->identify('customer_123', [
@@ -78,7 +78,7 @@ $perkamo->identify('customer_123', [
 ]);
 ```
 
-Use your application's stable user id as the Perkamo profile id. Put only
+Use your application's stable user id as the Perkamo customer id. Put only
 non-secret customer facts your application is allowed to share in traits.
 
 ## Program Catalog
@@ -143,8 +143,8 @@ The PHP SDK uses the configured server API key for this request. Browser key
 access policy is configured in Perkamo and enforced server-side; the runtime
 token request does not send scopes or event allowlists. Use `*` on the browser
 key to allow all current and future configured events. New browser keys default
-to the full browser SDK policy: profile reads, allowed browser events and
-profile streams. Do not expose the server API key to browser, mobile or widget
+to the full browser SDK policy: customer reads, allowed browser events and
+customer streams. Do not expose the server API key to browser, mobile or widget
 code.
 
 ## License

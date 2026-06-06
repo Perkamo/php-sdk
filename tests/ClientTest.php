@@ -40,7 +40,7 @@ final class ClientTest extends TestCase
         self::assertTrue(method_exists(Client::class, 'eventCatalog'));
     }
 
-    public function testExposesProfileIdentifyHelper(): void
+    public function testExposesCustomerIdentifyHelper(): void
     {
         self::assertTrue(method_exists(Client::class, 'identify'));
     }

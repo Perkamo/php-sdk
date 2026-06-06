@@ -99,9 +99,9 @@ final class Client
     /**
      * @return array<string, mixed>
      */
-    public function profile(string $userId): array
+    public function customer(string $userId): array
     {
-        return $this->request('GET', '/v1/profile/' . rawurlencode($userId), null, false);
+        return $this->request('GET', '/v1/customer/' . rawurlencode($userId), null, false);
     }
 
     /**

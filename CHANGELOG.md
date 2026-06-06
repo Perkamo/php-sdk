@@ -1,10 +1,19 @@
 # `perkamo/sdk` Changelog
 
+## 0.7.0 - 2026-06-06
+
+### Changed
+
+- Renamed the trusted customer state helper surface around the customer model
+  and aligned PHP examples with the customer-first API.
+- Documented formula-based award events and customer wallet semantics for the
+  refreshed program model.
+
 ## 0.6.0 - 2026-06-04
 
 ### Changed
 
-- Add `identify($userId, $traits)` for creating or updating trusted profile
+- Add `identify($userId, $traits)` for creating or updating trusted customer
   traits through `POST /v1/identify`.
 
 ## 0.5.0 - 2026-06-04
@@ -42,7 +51,7 @@
 
 ### Changed
 
-- Removed redundant Space arguments and payload fields from the server client; the server API key now identifies the Space for event, batch and profile calls.
+- Removed redundant Space arguments and payload fields from the server client; the server API key now identifies the Space for event, batch and customer calls.
 
 ## 0.2.0 - 2026-06-03
 
@@ -55,4 +64,4 @@
 ### Added
 
 - Added initial backend PHP client skeleton for Packagist.
-- Added signed event, batch and profile API helpers.
+- Added signed event, batch and customer API helpers.
