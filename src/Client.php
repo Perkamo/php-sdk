@@ -105,6 +105,29 @@ final class Client
     }
 
     /**
+     * Redeems a configured reward, subtracting its wallet cost and returning the
+     * declarative effect (coupon, free_shipping, gift_card, entitlement or
+     * custom) to apply on your side. Reuse a stable transaction id to make
+     * retries idempotent.
+     */
+    public function redeem(
+        string $userId,
+        string $rewardKey,
+        ?string $transactionId = null,
+    ): RedeemRewardResult {
+        return RedeemRewardResult::fromArray($this->request(
+            'POST',
+            '/v1/rewards/redeem',
+            [
+                'user_id' => $this->nonEmptyString($userId, 'userId'),
+                'reward_key' => $this->nonEmptyString($rewardKey, 'rewardKey'),
+                'transaction_id' => $transactionId ?? $this->createTransactionId(),
+            ],
+            true,
+        ));
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function program(): array
@@ -120,51 +143,6 @@ final class Client
         $earningRules = $this->program()['blueprint']['earningRules'] ?? [];
 
         return is_array($earningRules) ? array_values($earningRules) : [];
-    }
-
-    public function createBrowserToken(
-        string $browserKey,
-        string $userId,
-        ?int $ttlSeconds = null,
-    ): BrowserToken {
-        $payload = [
-            'browser_key' => $this->nonEmptyString($browserKey, 'browserKey'),
-            'user_id' => $this->nonEmptyString($userId, 'userId'),
-        ];
-
-        if ($ttlSeconds !== null) {
-            if ($ttlSeconds < 1 || $ttlSeconds > 1800) {
-                throw new InvalidArgumentException('Perkamo browser token TTL must be between 1 and 1800 seconds');
-            }
-            $payload['ttl_seconds'] = $ttlSeconds;
-        }
-
-        return BrowserToken::fromArray(
-            $this->request('POST', '/v1/browser-tokens', $payload, true),
-        );
-    }
-
-    public function createBrowserStreamToken(
-        string $browserKey,
-        string $userId,
-        ?int $ttlSeconds = 120,
-    ): BrowserToken {
-        $payload = [
-            'browser_key' => $this->nonEmptyString($browserKey, 'browserKey'),
-            'user_id' => $this->nonEmptyString($userId, 'userId'),
-            'purpose' => 'stream',
-        ];
-
-        if ($ttlSeconds !== null) {
-            if ($ttlSeconds < 1 || $ttlSeconds > 1800) {
-                throw new InvalidArgumentException('Perkamo browser token TTL must be between 1 and 1800 seconds');
-            }
-            $payload['ttl_seconds'] = $ttlSeconds;
-        }
-
-        return BrowserToken::fromArray(
-            $this->request('POST', '/v1/browser-tokens', $payload, true),
-        );
     }
 
     private function createTransactionId(): string

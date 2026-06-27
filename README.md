@@ -119,33 +119,49 @@ try {
 }
 ```
 
-## Browser Tokens
+## Client Tokens
 
 For browser SDK integrations, authenticate the user in your backend first and
-then ask Perkamo to issue a short-lived browser token:
+then sign a short-lived client token with a Perkamo signing key.
+
+Create the signing key in the Perkamo console (Settings → Security → Signing
+keys). It gives you a **KID** (shown in the creation dialog and then listed in
+the table) and a **one-time secret** (shown once, backend-only). Read both from environment
+variables — the names are your own choice:
 
 ```php
-$token = $perkamo->createBrowserToken(
-    browserKey: getenv('PERKAMO_BROWSER_KEY'),
-    userId: 'customer_123',
+use Perkamo\ClientTokenSigner;
+
+$token = ClientTokenSigner::sign(
+    kid: getenv('PERKAMO_SIGNING_KID'),       // KID
+    secret: getenv('PERKAMO_SIGNING_SECRET'), // one-time secret, backend-only
+    subject: 'customer_123',
+    scope: ['customer:read', 'events:write'],
+    events: ['page.viewed'],
     ttlSeconds: 600,
 );
 
 return [
-    'token' => $token->token,
-    'token_type' => $token->tokenType,
-    'expires_at' => $token->expiresAt->format(DATE_ATOM),
-    'expires_in' => $token->expiresIn,
+    'token' => $token,
+    'token_type' => 'Bearer',
 ];
 ```
 
-The PHP SDK uses the configured server API key for this request. Browser key
-access policy is configured in Perkamo and enforced server-side; the runtime
-token request does not send scopes or event allowlists. Use `*` on the browser
-key to allow all current and future configured events. New browser keys default
-to the full browser SDK policy: customer reads, allowed browser events and
-customer streams. Do not expose the server API key to browser, mobile or widget
-code.
+The arguments:
+
+| Argument     | What it is                                                                         |
+| ------------ | ---------------------------------------------------------------------------------- |
+| `kid`        | KID of your signing key; goes in the token header. Safe to expose.                 |
+| `secret`     | The signing key's one-time secret that signs the token. Sensitive — backend-only.  |
+| `subject`    | The user the token authorizes — your stable user id.                               |
+| `scope`      | Client permissions: `customer:read`, `events:write`, `stream:read`.                |
+| `events`     | Optional allow-list of event names the token may emit.                             |
+| `ttlSeconds` | Token lifetime in seconds (default `600`). Clamped to the key's maximum at verify. |
+
+Only the secret is sensitive; the `kid` is public and travels in every token
+header. `scope` and `events` are clamped to the signing key policy during
+verification. Use any secret manager in place of `getenv()`. Do not expose the
+server API key or signing secret to browser, mobile or widget code.
 
 ## License
 

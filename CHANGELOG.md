@@ -1,5 +1,14 @@
 # `perkamo/sdk` Changelog
 
+## 0.8.0 - 2026-06-26
+
+### Changed
+
+- Replace browser-token helpers with backend-only `ClientTokenSigner` for
+  self-signing short-lived Perkamo client tokens with signing keys.
+- Update package documentation around `kid`/secret handling and
+  client-token browser SDK setup.
+
 ## 0.7.0 - 2026-06-06
 
 ### Changed
