@@ -1,5 +1,12 @@
 # `perkamo/sdk` Changelog
 
+## Unreleased
+
+### Added
+
+- Add `deleteCustomer($userId)` for signed, idempotent customer erasure with a
+  server key that has the dedicated `customer:delete` scope.
+
 ## 0.8.0 - 2026-06-26
 
 ### Changed
@@ -74,3 +81,9 @@
 
 - Added initial backend PHP client skeleton for Packagist.
 - Added signed event, batch and customer API helpers.
+
+## 0.9.0 - 2026-07-29
+
+### Changed
+
+- Add signed, replay-safe customer erasure.

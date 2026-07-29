@@ -105,6 +105,22 @@ final class Client
     }
 
     /**
+     * Permanently erases a customer and suppresses the identifier from future
+     * ingestion. Requires the customer:delete server-key scope.
+     *
+     * @return array<string, mixed>
+     */
+    public function deleteCustomer(string $userId): array
+    {
+        return $this->request(
+            'DELETE',
+            '/v1/customer/' . rawurlencode($this->nonEmptyString($userId, 'userId')),
+            null,
+            true,
+        );
+    }
+
+    /**
      * Redeems a configured reward, subtracting its wallet cost and returning the
      * declarative effect (coupon, free_shipping, gift_card, entitlement or
      * custom) to apply on your side. Reuse a stable transaction id to make

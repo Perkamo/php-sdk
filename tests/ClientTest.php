@@ -43,6 +43,7 @@ final class ClientTest extends TestCase
     public function testExposesCustomerIdentifyHelper(): void
     {
         self::assertTrue(method_exists(Client::class, 'identify'));
+        self::assertTrue(method_exists(Client::class, 'deleteCustomer'));
     }
 
     public function testRequiresApiKey(): void

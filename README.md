@@ -81,6 +81,19 @@ $perkamo->identify('customer_123', [
 Use your application's stable user id as the Perkamo customer id. Put only
 non-secret customer facts your application is allowed to share in traits.
 
+## Delete Customers
+
+Permanently erase a customer from a trusted account-erasure workflow:
+
+```php
+$deletion = $perkamo->deleteCustomer('customer_123');
+```
+
+The signed request requires a server key with the dedicated `customer:delete`
+scope. It is idempotent, and the erased identifier remains suppressed so
+delayed requests cannot recreate the profile. Never expose this operation or
+its credentials to browser or mobile clients.
+
 ## Program Catalog
 
 Trusted backend and admin integrations can read the active Space program and
@@ -118,6 +131,30 @@ try {
     ]));
 }
 ```
+
+## Verify Webhooks
+
+Perkamo signs every webhook delivery. Verify the signature and reject replays
+before processing:
+
+```php
+use Perkamo\WebhookSignature;
+
+// $rawBody must be the exact bytes received (do not re-serialize the JSON).
+$ok = WebhookSignature::verify(
+    secret: getenv('PERKAMO_WEBHOOK_SECRET'),
+    payload: $rawBody,
+    signatureHeader: $request->headers->get('x-perkamo-signature'),
+    timestampHeader: $request->headers->get('x-perkamo-timestamp'),
+);
+if (!$ok) {
+    return new Response(status: 400);
+}
+```
+
+The signature is `v1=` + hex HMAC-SHA256 of `"{timestamp}.{body}"` keyed by the
+endpoint signing secret. Deliveries older than the tolerance window (default
+300 seconds) are rejected.
 
 ## Client Tokens
 
