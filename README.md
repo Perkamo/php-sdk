@@ -60,7 +60,7 @@ The client defaults to the hosted Perkamo API. Pass `baseUrl` only for a custom,
 staging or private endpoint.
 
 Reserved server-computed context keys such as `xp`, `wallet`, `wallets`,
-`level`, `perks`, `rewards` and `achievements` are rejected before a request is
+`level`, `perks`, `rewards` and `goals` are rejected before a request is
 sent.
 
 `emitEvent()` and `emit()` return `Perkamo\EventIngestResult`. Use `toArray()`
@@ -101,15 +101,19 @@ event catalog:
 
 ```php
 $program = $perkamo->program();
-$events = $perkamo->eventCatalog();
+$events = $perkamo->eventDefinitions();
 
 foreach ($events as $event) {
-    echo $event['event'] . PHP_EOL;
+    printf("%s (%s)\n", $event['key'], $event['status']);
 }
 ```
 
-Use this to populate customer-admin tooling with configured event keys and
-labels. Do not use it as a wallet editing API.
+Use this to populate customer-admin tooling with all registered, Goal-only,
+deprecated and discovered event keys. The older `eventCatalog()` method remains
+available and returns Earning rules only. `customer()`, `identify()`, `program()` and `eventCatalog()` normalize
+v1 responses to canonical `goals`, `awards`, `perks` and `unlock` fields and
+omit their deprecated REST aliases. Do not use the catalog as a wallet editing
+API.
 
 ## API Errors
 

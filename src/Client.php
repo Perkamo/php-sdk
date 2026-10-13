@@ -15,11 +15,13 @@ final class Client
 
     private readonly string $baseUrl;
     private readonly string $apiKey;
+    private readonly string $sdkIdentification;
 
     public function __construct(
         string $baseUrl = self::DEFAULT_BASE_URL,
         ?string $apiKey = null,
         private readonly int $timeoutSeconds = 10,
+        ?string $sdkIdentification = null,
     ) {
         if ($apiKey === null) {
             if (func_num_args() === 0) {
@@ -39,6 +41,9 @@ final class Client
 
         $this->baseUrl = $baseUrl;
         $this->apiKey = $apiKey;
+        $this->sdkIdentification = $sdkIdentification === null
+            ? SdkIdentification::forPackage('perkamo/sdk', '0.9.0')
+            : SdkIdentification::validate($sdkIdentification);
     }
 
     /**
@@ -85,7 +90,7 @@ final class Client
      */
     public function identify(string $userId, array $traits = []): array
     {
-        return $this->request(
+        $response = $this->request(
             'POST',
             '/v1/identify',
             [
@@ -94,6 +99,12 @@ final class Client
             ],
             true,
         );
+
+        if (isset($response['customer']) && is_array($response['customer'])) {
+            $response['customer'] = $this->canonicalCustomer($response['customer']);
+        }
+
+        return $response;
     }
 
     /**
@@ -101,7 +112,9 @@ final class Client
      */
     public function customer(string $userId): array
     {
-        return $this->request('GET', '/v1/customer/' . rawurlencode($userId), null, false);
+        return $this->canonicalCustomer(
+            $this->request('GET', '/v1/customer/' . rawurlencode($userId), null, false),
+        );
     }
 
     /**
@@ -148,7 +161,7 @@ final class Client
      */
     public function program(): array
     {
-        return $this->request('GET', '/v1/program', null, false);
+        return $this->canonicalProgram($this->request('GET', '/v1/program', null, false));
     }
 
     /**
@@ -159,6 +172,107 @@ final class Client
         $earningRules = $this->program()['blueprint']['earningRules'] ?? [];
 
         return is_array($earningRules) ? array_values($earningRules) : [];
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function eventDefinitions(): array
+    {
+        $program = $this->program();
+        $definitions = $program['blueprint']['eventDefinitions'] ?? null;
+        if (is_array($definitions)) {
+            return array_values($definitions);
+        }
+
+        $earningRules = $program['blueprint']['earningRules'] ?? [];
+        if (!is_array($earningRules)) {
+            return [];
+        }
+
+        return array_map(
+            static fn (array $rule): array => [
+                'key' => $rule['event'] ?? '',
+                'name' => $rule['title'] ?? ($rule['event'] ?? ''),
+                'description' => $rule['description'] ?? null,
+                'type' => 'custom',
+                'status' => 'active',
+                'references' => ['earningRule' => true, 'goals' => []],
+                'observationCount' => 0,
+            ],
+            array_values(array_filter($earningRules, 'is_array')),
+        );
+    }
+
+    /**
+     * Remove v1 transport aliases from the official SDK customer model.
+     *
+     * @param array<string, mixed> $customer
+     * @return array<string, mixed>
+     */
+    private function canonicalCustomer(array $customer): array
+    {
+        unset($customer['achievements']);
+
+        if (isset($customer['next_perks']) && is_array($customer['next_perks'])) {
+            $customer['next_perks'] = array_map(
+                static function (mixed $perk): mixed {
+                    if (!is_array($perk)) {
+                        return $perk;
+                    }
+                    unset($perk['trigger']);
+
+                    return $perk;
+                },
+                $customer['next_perks'],
+            );
+        }
+
+        if (isset($customer['perks']) && is_array($customer['perks'])) {
+            $customer['perks'] = array_map(
+                static function (mixed $perk): mixed {
+                    if (!is_array($perk) || !isset($perk['metadata']) || !is_array($perk['metadata'])) {
+                        return $perk;
+                    }
+                    unset($perk['metadata']['trigger']);
+
+                    return $perk;
+                },
+                $customer['perks'],
+            );
+        }
+
+        return $customer;
+    }
+
+    /**
+     * Remove v1 transport aliases from the official SDK program model.
+     *
+     * @param array<string, mixed> $program
+     * @return array<string, mixed>
+     */
+    private function canonicalProgram(array $program): array
+    {
+        if (!isset($program['blueprint']) || !is_array($program['blueprint'])) {
+            return $program;
+        }
+
+        unset($program['blueprint']['passivePerks'], $program['blueprint']['achievements']);
+        if (isset($program['blueprint']['earningRules']) && is_array($program['blueprint']['earningRules'])) {
+            $program['blueprint']['earningRules'] = array_map(
+                static function (mixed $rule): mixed {
+                    if (!is_array($rule)) {
+                        return $rule;
+                    }
+                    unset($rule['rewards']);
+
+                    return $rule;
+                },
+                $program['blueprint']['earningRules'],
+            );
+        }
+
+        return $program;
     }
 
     private function createTransactionId(): string
@@ -190,6 +304,7 @@ final class Client
         $headers = [
             'accept: application/json',
             'x-perkamo-api-key: ' . $this->apiKey,
+            'x-perkamo-sdk: ' . $this->sdkIdentification,
         ];
 
         if ($payload !== null) {

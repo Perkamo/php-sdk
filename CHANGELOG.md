@@ -2,10 +2,21 @@
 
 ## Unreleased
 
+### Breaking
+
+- Customer and program helpers now return only canonical `goals`, `awards`,
+  `perks` and `unlock` fields. Migrate `achievements` to `goals`, Earning-rule
+  `rewards` to `awards`, `passivePerks` to `perks`, and `trigger` to `unlock`.
+
 ### Added
 
+- Send the installed top-level SDK package and version as bounded diagnostic
+  metadata so Perkamo can provide future upgrade guidance.
 - Add `deleteCustomer($userId)` for signed, idempotent customer erasure with a
   server key that has the dedicated `customer:delete` scope.
+- Add `eventDefinitions()` for the complete Event Catalog, including Goal-only,
+  deprecated and discovered event keys; keep `eventCatalog()` as the
+  Earning-rule-only compatibility helper.
 
 ## 0.8.0 - 2026-06-26
 
@@ -87,3 +98,9 @@
 ### Changed
 
 - Add signed, replay-safe customer erasure.
+
+## 0.9.1 - 2026-10-13
+
+### Changed
+
+- Refresh dependencies and verify supported SDK integrations

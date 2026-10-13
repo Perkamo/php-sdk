@@ -20,6 +20,7 @@ final class EventContext implements JsonSerializable
         'rewards' => true,
         'level' => true,
         'perks' => true,
+        'goals' => true,
         'achievements' => true,
     ];
 
